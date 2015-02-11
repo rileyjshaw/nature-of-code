@@ -16,31 +16,6 @@
   var height = window.innerHeight;
   var width = document.documentElement.clientWidth;
 
-  function createCanvas () {
-    var canvas = document.createElement('canvas');
-    var ctx = canvas.getContext('2d');
-
-    // Creates a dummy canvas to test device's pixel ratio
-    ratio = (function () {
-      var ctx = document.createElement('canvas').getContext('2d');
-      var dpr = window.devicePixelRatio || 1;
-      var bsr = ctx.webkitBackingStorePixelRatio ||
-                ctx.mozBackingStorePixelRatio ||
-                ctx.msBackingStorePixelRatio ||
-                ctx.oBackingStorePixelRatio ||
-                ctx.backingStorePixelRatio || 1;
-      return dpr / bsr;
-    })();
-
-    canvas.width = width * ratio;
-    canvas.height = height * ratio;
-    canvas.style.width = width + 'px';
-    canvas.style.height = height + 'px';
-
-    document.body.appendChild(canvas);
-    return canvas;
-  }
-
   function Vector (x, y) {
     this.x = x;
     this.y = y;
@@ -128,9 +103,12 @@
     return Entity;
   }
 
-  function Scene (stepFn, init, entityCap) {
+  function Scene (stepFn, init, entityCap, listeners) {
     var self = this;
-    var canvas = createCanvas();
+    var canvas = document.createElement('canvas');
+    canvas.height = height;
+    canvas.width = width;
+    document.body.appendChild(canvas);
 
     stepFn = stepFn || function () {};
 
@@ -145,15 +123,40 @@
       window.requestAnimationFrame(loop);
     };
 
+    function relativeCoords (e) {
+      var totalOffsetX = 0;
+      var totalOffsetY = 0;
+      var currentElement = canvas;
+
+      do {
+        totalOffsetX += currentElement.offsetLeft - currentElement.scrollLeft;
+        totalOffsetY += currentElement.offsetTop - currentElement.scrollTop;
+        currentElement = currentElement.offsetParent;
+      } while (currentElement);
+
+      var canvasX = e.pageX - totalOffsetX;
+      var canvasY = e.pageY - totalOffsetY;
+
+      return [canvasX, canvasY];
+    }
+
     self.age = 0;
     self.entities = [];
-    self.canvas = canvas;
     self.ctx = canvas.getContext('2d');
     self.height = canvas.height;
     self.width = canvas.width;
 
     if (init) init(self);
     if (entityCap) self.entityCap = entityCap;
+    if (listeners) {
+      Object.keys(listeners).forEach(function (key) {
+        if (key === 'mouse') {
+          canvas.addEventListener('mousemove', function (e) {
+            listeners.mouse.apply(self, relativeCoords(e || window.event));
+          }, false);
+        } else canvas.addEventListener(key, listeners[key], false);
+      });
+    }
 
     window.requestAnimationFrame(loop);
   }
