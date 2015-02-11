@@ -173,7 +173,11 @@
           canvas.addEventListener('mousemove', function (e) {
             listeners.mouse.apply(self, relativeCoords(e || window.event));
           }, false);
-        } else canvas.addEventListener(key, listeners[key], false);
+        } else if (key === 'click') {
+          canvas.addEventListener('click', function (e) {
+            listeners.click.apply(self, relativeCoords(e || window.event));
+          }, false);
+        } else canvas.addEventListener(key, listeners[key].bind(self), false);
       });
     }
 
