@@ -1,0 +1,23 @@
+{
+  "name": "nature-of-code",
+  "version": "1.0.0",
+  "description": "Quick demos based loosely Daniel Shiffman's book, 'The Nature of Code'",
+  "main": "gulpfile.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "rileyjshaw <i@rileyjshaw.com> (http://rileyjshaw.com/)",
+  "license": "MIT",
+  "devDependencies": {
+    "glob": "^4.3.5",
+    "gulp": "^3.8.11",
+    "gulp-gh-pages": "^0.4.0",
+    "gulp-jade": "^0.11.0",
+    "gulp-jshint": "^1.9.2",
+    "gulp-load-plugins": "^0.8.0",
+    "gulp-rename": "^1.2.0",
+    "gulp-uglify": "^1.1.0",
+    "gulp-webserver": "^0.9.0",
+    "marked": "^0.3.3"
+  }
+}

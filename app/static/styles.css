@@ -1,0 +1,25 @@
+.demo {
+	margin: 0;
+	font-size: 0;
+}
+.prev, .next {
+	position: fixed;
+	top: 50%;
+	padding: 2px 8px;
+	font: bold italic 16px 'Ubuntu', sans-serif;
+	text-transform: uppercase;
+	text-decoration: none;
+	color: black;
+	background: #ff6;
+	box-shadow: 0 0 6px 2px rgba(18, 18, 0, 0.5);
+	transform: translate(0, -50%);
+}
+.prev:hover, .next:hover {
+	background: yellow;
+}
+.prev {
+	left: 12px;
+}
+.next {
+	right: 12px;
+}

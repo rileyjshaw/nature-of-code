@@ -1,0 +1,13 @@
+extends ./default.jade
+
+block title
+  title "Demo #{i}: #{demoName.charAt(0).toUpperCase() + demoName.slice(1)} | Nature of Code"
+
+block body
+  body.demo
+    if prev!==null
+      a.prev(href="#{prev}.html") Prev
+    if next!==null
+      a.next(href="#{next}.html") Next
+    script(src="util.js")
+    script(src="demos/#{demoName}.js")
