@@ -27,9 +27,23 @@
     return new Vector(x, y);
   };
 
+  Vector.prototype.minus = function (vector) {
+    var x = this.x - vector.x;
+    var y = this.y - vector.y;
+    return new Vector(x, y);
+  };
+
   Vector.prototype.times = function (factor) {
     var x = this.x * factor;
     var y = this.y * factor;
+    return new Vector(x, y);
+  };
+
+  Vector.prototype.normalize = function () {
+    var factor = Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2));
+    var x = factor ? this.x / factor : 0;
+    var y = factor ? this.y / factor : 0;
+
     return new Vector(x, y);
   };
 
@@ -103,8 +117,9 @@
     return Entity;
   }
 
-  function Scene (stepFn, init, entityCap, listeners) {
+  function Scene (stepFn, init, listeners) {
     var self = this;
+
     var canvas = document.createElement('canvas');
     canvas.height = height;
     canvas.width = width;
@@ -147,14 +162,22 @@
     self.width = canvas.width;
 
     if (init) init(self);
-    if (entityCap) self.entityCap = entityCap;
     if (listeners) {
       Object.keys(listeners).forEach(function (key) {
         if (key === 'mouse') {
+          self.mouse = {
+            x: width / 2,
+            y: height / 2,
+          };
+
           canvas.addEventListener('mousemove', function (e) {
             listeners.mouse.apply(self, relativeCoords(e || window.event));
           }, false);
-        } else canvas.addEventListener(key, listeners[key], false);
+        } else if (key === 'click') {
+          canvas.addEventListener('click', function (e) {
+            listeners.click.apply(self, relativeCoords(e || window.event));
+          }, false);
+        } else canvas.addEventListener(key, listeners[key].bind(self), false);
       });
     }
 

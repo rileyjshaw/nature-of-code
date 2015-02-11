@@ -39,9 +39,10 @@
     function init (scene) {
       var x = Math.floor(scene.width / 2 / 80) * 80;
       var y = Math.floor(scene.height / 2 / 80) * 80;
+
+      scene.entityCap = 5;
       scene.entities.push(new UlamWalker(scene, x, y));
-    },
-    5
+    }
   );
 
 })(typeof nature === 'object' ? nature : (nature = {}));

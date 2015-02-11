@@ -46,9 +46,12 @@
     }
   );
 
-  new nature.Scene(function step (scene) {
-    scene.ctx.clearRect(0, 0, scene.width, scene.height);
-  }, function init (scene) {
-    scene.entities.push(new Car(scene, scene.width / 2, scene.height / 2));
-  });
+  new nature.Scene(
+    function step (scene) {
+      scene.ctx.clearRect(0, 0, scene.width, scene.height);
+    },
+    function init (scene) {
+      scene.entities.push(new Car(scene, scene.width / 2, scene.height / 2));
+    }
+  );
 })(typeof nature === 'object' ? nature : (nature = {}));

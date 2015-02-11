@@ -32,12 +32,15 @@
     }
   );
 
-  new nature.Scene(function step (scene) {
-    scene.ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
-    scene.ctx.fillRect(0, 0, scene.width, scene.height);
-  }, function init (scene) {
-    for (var x = 0; x <= scene.width; x += 12) {
-      scene.entities.push(new Worm(scene, x, scene.height / 2));
+  new nature.Scene(
+    function step (scene) {
+      scene.ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+      scene.ctx.fillRect(0, 0, scene.width, scene.height);
+    },
+    function init (scene) {
+      for (var x = 0; x <= scene.width; x += 12) {
+        scene.entities.push(new Worm(scene, x, scene.height / 2));
+      }
     }
-  });
+  );
 })(typeof nature === 'object' ? nature : (nature = {}));
