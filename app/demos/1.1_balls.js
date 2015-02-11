@@ -34,6 +34,11 @@
       scene.entities.push(new Ball(scene, scene.width / 2, scene.height / 2));
       scene.entities.push(new Ball(scene, scene.width / 4, scene.height / 4));
       scene.entities.push(new Ball(scene, scene.width * 3 / 4, scene.height * 3 / 4));
+    },
+    {
+      click: function (x, y) {
+        this.entities.push(new Ball(this, x, y));
+      }
     }
   );
 
