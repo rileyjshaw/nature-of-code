@@ -1,7 +1,7 @@
 (function (exports) {
-	var PI2 = Math.PI * 2;
+  var PI2 = Math.PI * 2;
 
-	function radians (deg) {
+  function radians (deg) {
     return deg / 360 * 2 * Math.PI;
   }
 
@@ -13,157 +13,160 @@
     return Math.cos(radians(deg));
   }
 
-	var height = window.innerHeight;
-	var width = document.documentElement.clientWidth;
+  var height = window.innerHeight;
+  var width = document.documentElement.clientWidth;
 
-	function createCanvas () {
-		var canvas = document.createElement('canvas');
-		var ctx = canvas.getContext('2d');
+  function Vector (x, y) {
+    this.x = x;
+    this.y = y;
+  }
 
-		// Creates a dummy canvas to test device's pixel ratio
-		ratio = (function () {
-			var ctx = document.createElement('canvas').getContext('2d');
-			var dpr = window.devicePixelRatio || 1;
-			var bsr = ctx.webkitBackingStorePixelRatio ||
-			          ctx.mozBackingStorePixelRatio ||
-			          ctx.msBackingStorePixelRatio ||
-			          ctx.oBackingStorePixelRatio ||
-			          ctx.backingStorePixelRatio || 1;
-			return dpr / bsr;
-		})();
+  Vector.prototype.plus = function (vector) {
+    var x = this.x + vector.x;
+    var y = this.y + vector.y;
+    return new Vector(x, y);
+  };
 
-		canvas.width = width * ratio;
-		canvas.height = height * ratio;
-		canvas.style.width = width + 'px';
-		canvas.style.height = height + 'px';
+  Vector.prototype.times = function (factor) {
+    var x = this.x * factor;
+    var y = this.y * factor;
+    return new Vector(x, y);
+  };
 
-		document.body.appendChild(canvas);
-		return canvas;
-	}
+  function BaseEntity () {
+    this.phase = 0;
+    this.velocity = new Vector(0, 0);
+    this.acceleration = new Vector(0, 0);
+    this.pos = new Vector(0, 0);
+    this.radius = 2;
+    this.speed = 1;
+  }
 
-	function Vector (x, y) {
-		this.x = x;
-		this.y = y;
-	}
+  BaseEntity.prototype.draw = function (scene) {
+    var ctx = scene.ctx;
+    ctx.fillStyle = ctx.strokeStyle = 'hsl(' + (scene.age + this.phase) + ', 55%, 70%)';
+    ctx.beginPath();
+    ctx.arc(this.pos.x, this.pos.y, this.radius, 0, PI2);
+    ctx.closePath();
+    ctx.fill();
+  };
 
-	Vector.prototype.plus = function (vector) {
-		var x = this.x + vector.x;
-		var y = this.y + vector.y;
-		return new Vector(x, y);
-	};
+  BaseEntity.prototype.die = function (scene) {
+    var entities = scene.entities;
+    return entities.splice(entities.indexOf(this), 1);
+  };
 
-	Vector.prototype.times = function (factor) {
-		var x = this.x * factor;
-		var y = this.y * factor;
-		return new Vector(x, y);
-	};
+  function entityFactory (stepFn, init, protoHash) {
+    var Entity;
 
-	function BaseEntity () {
-		this.phase = 0;
-		this.velocity = new Vector(0, 0);
-		this.acceleration = new Vector(0, 0);
-		this.pos = new Vector(0, 0);
-		this.radius = 2;
-		this.speed = 1;
-	}
+    if (init) {
+      Entity = function (scene, x, y) {
+        this.pos = new Vector(x, y);
+        init.call(this, scene);
+      };
+    } else {
+      Entity = function (scene, x, y) {
+        this.pos = new Vector(x, y);
+      };
+    }
 
-	BaseEntity.prototype.draw = function (scene) {
-		var ctx = scene.ctx;
-		ctx.fillStyle = ctx.strokeStyle = 'hsl(' + (scene.age + this.phase) + ', 55%, 70%)';
-		ctx.beginPath();
-		ctx.arc(this.pos.x, this.pos.y, this.radius, 0, PI2);
-		ctx.closePath();
-		ctx.fill();
-	};
+    Entity.prototype = new BaseEntity();
+    Entity.prototype.constructor = Entity;
 
-	BaseEntity.prototype.die = function (scene) {
-		var entities = scene.entities;
-		return entities.splice(entities.indexOf(this), 1);
-	};
+    if (protoHash) {
+      Object.keys(protoHash).forEach(function (key) {
+        Entity.prototype[key] = protoHash[key];
+      });
+    }
 
-	function entityFactory (stepFn, init, protoHash) {
-		var Entity;
+    if (typeof stepFn !== 'function') {
+      stepFn = function () {};
+    }
 
-		if (init) {
-			Entity = function (scene, x, y) {
-				this.pos = new Vector(x, y);
-				init.call(this, scene);
-			};
-		} else {
-			Entity = function (scene, x, y) {
-				this.pos = new Vector(x, y);
-			};
-		}
+    Entity.prototype.step = function step (scene) {
+      var x = this.pos.x, y = this.pos.y;
 
-		Entity.prototype = new BaseEntity();
-		Entity.prototype.constructor = Entity;
+      stepFn.call(this, scene);
+      this.velocity = this.velocity.plus(this.acceleration);
+      this.pos = this.pos.plus(this.velocity.times(this.speed));
 
-		if (protoHash) {
-			Object.keys(protoHash).forEach(function (key) {
-				Entity.prototype[key] = protoHash[key];
-			});
-		}
+      if (x < -this.radius * 2 || x > scene.width ||
+          y < -this.radius * 2 || y > scene.height) {
+        typeof this.outOfBounds === 'function' ?
+          this.outOfBounds(scene) :
+          this.die(scene);
+      } else {
+        this.draw(scene);
+      }
+    };
 
-		if (typeof stepFn !== 'function') {
-			stepFn = function () {};
-		}
+    return Entity;
+  }
 
-		Entity.prototype.step = function step (scene) {
-			var x = this.pos.x, y = this.pos.y;
+  function Scene (stepFn, init, entityCap, listeners) {
+    var self = this;
+    var canvas = document.createElement('canvas');
+    canvas.height = height;
+    canvas.width = width;
+    document.body.appendChild(canvas);
 
-			stepFn.call(this, scene);
-			this.velocity = this.velocity.plus(this.acceleration);
-			this.pos = this.pos.plus(this.velocity.times(this.speed));
+    stepFn = stepFn || function () {};
 
-			if (x < -this.radius * 2 || x > scene.width ||
-			    y < -this.radius * 2 || y > scene.height) {
-				typeof this.outOfBounds === 'function' ?
-					this.outOfBounds(scene) :
-					this.die(scene);
-			} else {
-				this.draw(scene);
-			}
-		};
+    function loop () {
+      var entities = self.entities;
+      entities.splice(0, entities.length - self.entityCap);
+      stepFn(self);
+      entities.forEach(function (entity) {
+        entity.step(self);
+      });
+      self.age++;
+      window.requestAnimationFrame(loop);
+    };
 
-		return Entity;
-	}
+    function relativeCoords (e) {
+      var totalOffsetX = 0;
+      var totalOffsetY = 0;
+      var currentElement = canvas;
 
-	function Scene (stepFn, init, entityCap) {
-		var self = this;
-		var canvas = createCanvas();
+      do {
+        totalOffsetX += currentElement.offsetLeft - currentElement.scrollLeft;
+        totalOffsetY += currentElement.offsetTop - currentElement.scrollTop;
+        currentElement = currentElement.offsetParent;
+      } while (currentElement);
 
-		stepFn = stepFn || function () {};
+      var canvasX = e.pageX - totalOffsetX;
+      var canvasY = e.pageY - totalOffsetY;
 
-		function loop () {
-			var entities = self.entities;
-			entities.splice(0, entities.length - self.entityCap);
-			stepFn(self);
-			entities.forEach(function (entity) {
-				entity.step(self);
-			});
-			self.age++;
-			window.requestAnimationFrame(loop);
-		};
+      return [canvasX, canvasY];
+    }
 
-		self.age = 0;
-		self.entities = [];
-		self.canvas = canvas;
-		self.ctx = canvas.getContext('2d');
-		self.height = canvas.height;
-		self.width = canvas.width;
+    self.age = 0;
+    self.entities = [];
+    self.ctx = canvas.getContext('2d');
+    self.height = canvas.height;
+    self.width = canvas.width;
 
-		if (init) init(self);
-		if (entityCap) self.entityCap = entityCap;
+    if (init) init(self);
+    if (entityCap) self.entityCap = entityCap;
+    if (listeners) {
+      Object.keys(listeners).forEach(function (key) {
+        if (key === 'mouse') {
+          canvas.addEventListener('mousemove', function (e) {
+            listeners.mouse.apply(self, relativeCoords(e || window.event));
+          }, false);
+        } else canvas.addEventListener(key, listeners[key], false);
+      });
+    }
 
-		window.requestAnimationFrame(loop);
-	}
+    window.requestAnimationFrame(loop);
+  }
 
-	Scene.prototype.entityCap = Infinity;
+  Scene.prototype.entityCap = Infinity;
 
-	exports.radians = radians;
-	exports.sin = sin;
-	exports.cos = cos;
-	exports.Vector = Vector;
-	exports.entityFactory = entityFactory;
-	exports.Scene = Scene;
+  exports.radians = radians;
+  exports.sin = sin;
+  exports.cos = cos;
+  exports.Vector = Vector;
+  exports.entityFactory = entityFactory;
+  exports.Scene = Scene;
 })(typeof nature === 'object' ? nature : (nature = {}));
