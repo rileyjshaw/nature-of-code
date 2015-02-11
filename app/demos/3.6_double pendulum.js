@@ -1,6 +1,6 @@
 (function (exports) {
-  var ARM_LENGTH = 180;
-  var MASS = 36;
+  var ARM_LENGTH = 120;
+  var MASS = 24;
   var GRAVITY = 9.81;
   var FRICTION = 0.995;
 
@@ -55,7 +55,7 @@
     },
     {
       armLength: ARM_LENGTH,
-      radius: MASS
+      radius: MASS,
     }
   );
 
@@ -71,7 +71,7 @@
       p2.anchor = p1;
       p2.angle = 120;
 
-      ctx.lineWidth = 8;
+      ctx.lineWidth = 5;
       ctx.lineCap = 'round';
 
       scene.entities.push(p1);
