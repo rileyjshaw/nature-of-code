@@ -39,6 +39,14 @@
     return new Vector(x, y);
   };
 
+  Vector.prototype.normalize = function () {
+    var factor = Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2));
+    var x = factor ? this.x / factor : 0;
+    var y = factor ? this.y / factor : 0;
+
+    return new Vector(x, y);
+  };
+
   function BaseEntity () {
     this.phase = 0;
     this.velocity = new Vector(0, 0);
@@ -157,6 +165,11 @@
     if (listeners) {
       Object.keys(listeners).forEach(function (key) {
         if (key === 'mouse') {
+          self.mouse = {
+            x: width / 2,
+            y: height / 2,
+          };
+
           canvas.addEventListener('mousemove', function (e) {
             listeners.mouse.apply(self, relativeCoords(e || window.event));
           }, false);
