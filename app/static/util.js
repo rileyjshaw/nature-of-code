@@ -103,8 +103,9 @@
     return Entity;
   }
 
-  function Scene (stepFn, init, entityCap, listeners) {
+  function Scene (stepFn, init, listeners) {
     var self = this;
+
     var canvas = document.createElement('canvas');
     canvas.height = height;
     canvas.width = width;
@@ -147,7 +148,6 @@
     self.width = canvas.width;
 
     if (init) init(self);
-    if (entityCap) self.entityCap = entityCap;
     if (listeners) {
       Object.keys(listeners).forEach(function (key) {
         if (key === 'mouse') {
