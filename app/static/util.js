@@ -27,6 +27,12 @@
     return new Vector(x, y);
   };
 
+  Vector.prototype.minus = function (vector) {
+    var x = this.x - vector.x;
+    var y = this.y - vector.y;
+    return new Vector(x, y);
+  };
+
   Vector.prototype.times = function (factor) {
     var x = this.x * factor;
     var y = this.y * factor;
