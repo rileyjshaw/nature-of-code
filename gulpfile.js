@@ -102,7 +102,7 @@ gulp.task('watch', function () {
 gulp.task('webserver', function () {
   gulp.src(paths.dist.root)
     .pipe($.webserver({
-      host: '0.0.0.0',
+      host: 'localhost',
       livereload: true,
       open: true
     }));
