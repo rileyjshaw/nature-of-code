@@ -48,21 +48,21 @@
   };
 
   function BaseEntity () {
-    this.phase = 0;
-    this.velocity = new Vector(0, 0);
     this.acceleration = new Vector(0, 0);
+    this.velocity = new Vector(0, 0);
     this.pos = new Vector(0, 0);
-    this.radius = 2;
     this.speed = 1;
+    this.radius = 2;
+    this.phase = 0;
   }
 
   BaseEntity.prototype.draw = function (scene) {
     var ctx = scene.ctx;
     ctx.fillStyle = ctx.strokeStyle = 'hsl(' + (scene.age + this.phase) + ', 55%, 70%)';
     ctx.beginPath();
-    ctx.arc(this.pos.x, this.pos.y, this.radius, 0, PI2);
-    ctx.closePath();
+    ctx.arc(this.pos.x, this.pos.y, this.radius, 0, Math.PI * 2);
     ctx.fill();
+    ctx.closePath();
   };
 
   BaseEntity.prototype.die = function (scene) {
@@ -98,14 +98,26 @@
     }
 
     Entity.prototype.step = function step (scene) {
-      var x = this.pos.x, y = this.pos.y;
+      var forces = this.forces;
+      if (typeof this.drawSetup === 'function') {
+        this.drawSetup(scene);
+      }
 
-      stepFn.call(this, scene);
+      if (forces) {
+        this.acceleration = new Vector(0, 0);
+        Object.keys(forces).forEach((function (key) {
+          var force = forces[key].times(1 / this.mass);
+          this.acceleration = this.acceleration.plus(force);
+        }).bind(this));
+      }
+
       this.velocity = this.velocity.plus(this.acceleration);
       this.pos = this.pos.plus(this.velocity.times(this.speed));
 
-      if (x < -this.radius * 2 || x > scene.width ||
-          y < -this.radius * 2 || y > scene.height) {
+      stepFn.call(this, scene);
+
+      if (this.pos.x < -this.radius * 2 || this.pos.x > scene.width ||
+          this.pos.y < -this.radius * 2 || this.pos.y > scene.height) {
         typeof this.outOfBounds === 'function' ?
           this.outOfBounds(scene) :
           this.die(scene);
@@ -121,8 +133,12 @@
     var self = this;
 
     var canvas = document.createElement('canvas');
+    var ctx = canvas.getContext('2d');
+
     canvas.height = height;
     canvas.width = width;
+    ctx.lineCap = 'round';
+
     document.body.appendChild(canvas);
 
     stepFn = stepFn || function () {};
@@ -157,7 +173,7 @@
 
     self.age = 0;
     self.entities = [];
-    self.ctx = canvas.getContext('2d');
+    self.ctx = ctx;
     self.height = canvas.height;
     self.width = canvas.width;
 
