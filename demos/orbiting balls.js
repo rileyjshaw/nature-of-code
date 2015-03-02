@@ -14,8 +14,21 @@
       this.phase = Math.floor(Math.random() * 360);
     },
     {
-      radius: 90,
-      die: function () {},
+      radius: 6,
+      drawSetup: function (scene) {
+        var ctx = scene.ctx, pos = this.pos;
+        ctx.fillStyle = ctx.strokeStyle = 'hsl(' + (scene.age + this.phase) + ', 55%, 70%)';
+        ctx.lineWidth = this.radius * 2;
+        ctx.beginPath();
+        ctx.moveTo(pos.x, pos.y);
+      },
+      draw: function (scene) {
+        var ctx = scene.ctx, pos = this.pos;
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+        ctx.closePath();
+      },
+      die: function () {}
     }
   );
 
