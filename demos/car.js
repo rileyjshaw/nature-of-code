@@ -3,8 +3,8 @@
 
   function drawRotatedRect (scene) {
     var ctx = scene.ctx;
-    var x = this.pos.x = (this.pos.x + scene.width) % scene.width;
-    var y = this.pos.y = (this.pos.y + scene.height) % scene.height;
+    var x = this.pos.x;
+    var y = this.pos.y;
 
     var rad = Math.atan2(this.velocity.y, this.velocity.x);
 
@@ -42,7 +42,11 @@
     {
       draw: drawRotatedRect,
       height: 54,
-      width: 30
+      width: 30,
+      outOfBounds: function (scene) {
+        this.pos.x = (this.pos.x + scene.width) % scene.width;
+        this.pos.y = (this.pos.y + scene.height) % scene.height;
+      }
     }
   );
 

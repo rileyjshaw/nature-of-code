@@ -28,7 +28,7 @@
         ctx.stroke();
         ctx.closePath();
       },
-      die: function () {}
+      outOfBounds: function () {}
     }
   );
 
